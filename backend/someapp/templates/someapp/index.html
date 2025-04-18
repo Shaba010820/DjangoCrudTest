@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Test API CRUD</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fc;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: white;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            margin-top: 50px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        h2 {
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+
+        form {
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input, button, select {
+            padding: 12px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button.danger {
+            background-color: #dc3545;
+        }
+
+        button.danger:hover {
+            background-color: #c82333;
+        }
+
+        #notifications {
+            margin-top: 20px;
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #f5c6cb;
+            display: none;
+            text-align: center;
+        }
+
+        .form-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+        }
+
+        .form-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .data-list {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .data-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .data-item:last-child {
+            border-bottom: none;
+        }
+
+        .select-item {
+            margin-right: 10px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .success-notification {
+            background-color: #d4edda !important;
+            color: #155724 !important;
+            border-color: #c3e6cb !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Library Management System</h1>
+
+        <!-- Create Author Form -->
+        <div class="form-section">
+            <h2>Create Author</h2>
+            <form id="createAuthorForm">
+                <input type="text" id="authorFirstName" placeholder="First Name" required>
+                <input type="text" id="authorLastName" placeholder="Last Name" required>
+                <input type="number" id="authorBirthYear" placeholder="Birth Year" required>
+                <button type="submit">Create Author</button>
+            </form>
+        </div>
+
+        <!-- Create Book Form -->
+        <div class="form-section">
+            <h2>Create Book</h2>
+            <form id="createBookForm">
+                <input type="text" id="bookTitle" placeholder="Book Title" required>
+                <input type="text" id="bookDescription" placeholder="Book Description" required>
+                <input type="number" id="bookPublishYear" placeholder="Publish Year" required>
+                <input type="text" id="bookGenre" placeholder="Genre" required>
+                <select id="bookAuthorId" required>
+                    <option value="">Select Author</option>
+                </select>
+                <button type="submit">Create Book</button>
+            </form>
+        </div>
+
+        <!-- Create Favorite Form -->
+        <div class="form-section">
+            <h2>Add to Favorites</h2>
+            <form id="createFavoriteForm">
+                <input type="number" id="favoriteUserId" placeholder="User ID" required>
+                <select id="favoriteAuthorId" required>  <!-- Проверьте этот ID -->
+                    <option value="">Select Author</option>
+                </select>
+                <button type="submit">Add to Favorites</button>
+            </form>
+        </div>
+
+        <!-- List Authors -->
+        <div class="form-section">
+            <h2>Authors</h2>
+            <button id="listAuthorsBtn">Load Authors</button>
+            <div id="authorsList" class="data-list"></div>
+        </div>
+
+        <!-- List Books -->
+        <div class="form-section">
+            <h2>Books</h2>
+            <button id="listBooksBtn">Load Books</button>
+            <div id="booksList" class="data-list"></div>
+        </div>
+
+        <!-- List Favorites -->
+        <div class="form-section">
+            <h2>Favorites</h2>
+            <button id="listFavoritesBtn">Load Favorites</button>
+            <div id="favoritesList" class="data-list"></div>
+        </div>
+
+        <!-- Update Section -->
+        <div class="form-section">
+            <h2>Update</h2>
+            <select id="updateEntityType">
+                <option value="">Select entity type</option>
+                <option value="author">Author</option>
+                <option value="book">Book</option>
+            </select>
+
+            <div id="updateAuthorForm" style="display: none;">
+                <select id="updateAuthorSelect">
+                    <option value="">Select Author</option>
+                </select>
+                <input type="text" id="updatedFirstName" placeholder="New First Name">
+                <input type="text" id="updatedLastName" placeholder="New Last Name">
+                <input type="number" id="updatedBirthYear" placeholder="New Birth Year">
+                <button id="updateAuthorBtn">Update Author</button>
+            </div>
+
+            <div id="updateBookForm" style="display: none;">
+                <select id="updateBookSelect">
+                    <option value="">Select Book</option>
+                </select>
+                <input type="text" id="updatedBookTitle" placeholder="New Title">
+                <input type="text" id="updatedBookDescription" placeholder="New Description">
+                <input type="number" id="updatedPublishYear" placeholder="New Publish Year">
+                <input type="text" id="updatedGenre" placeholder="New Genre">
+                <select id="updatedAuthorId">
+                    <option value="">Select New Author (optional)</option>
+                </select>
+                <button id="updateBookBtn">Update Book</button>
+            </div>
+        </div>
+
+        <!-- Delete Section -->
+        <div class="form-section">
+            <h2>Delete</h2>
+            <select id="deleteEntityType">
+                <option value="">Select entity type</option>
+                <option value="author">Author</option>
+                <option value="book">Book</option>
+                <option value="favorite">Favorite</option>
+            </select>
+
+            <div id="deleteAuthorForm" style="display: none;">
+                <select id="deleteAuthorSelect">
+                    <option value="">Select Author</option>
+                </select>
+                <button id="deleteAuthorBtn" class="danger">Delete Author</button>
+            </div>
+
+            <div id="deleteBookForm" style="display: none;">
+                <select id="deleteBookSelect">
+                    <option value="">Select Book</option>
+                </select>
+                <button id="deleteBookBtn" class="danger">Delete Book</button>
+            </div>
+
+            <div id="deleteFavoriteForm" style="display: none;">
+                <select id="deleteFavoriteSelect">
+                    <option value="">Select Favorite</option>
+                </select>
+                <button id="deleteFavoriteBtn" class="danger">Delete Favorite</button>
+            </div>
+        </div>
+
+        <!-- Notifications -->
+        <div id="notifications"></div>
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:8011/api";
+        const WS_URL = "ws://localhost:8011/ws/notifications/";
+
+        // Global variables to store loaded data
+        let authors = [];
+        let books = [];
+        let favorites = [];
+
+        // Initialize WebSocket connection
+        const socket = new WebSocket(WS_URL);
+
+        socket.onopen = function() {
+            console.log("WebSocket connection established");
+            showNotification("Connected to real-time updates", "success");
+        };
+
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            console.log("Message received:", data.message);
+            showNotification("Update: " + data.message, "success");
+
+            // Refresh relevant data when updates come through WS
+            if (data.message.includes("author")) {
+                loadAuthors();
+            } else if (data.message.includes("book")) {
+                loadBooks();
+            } else if (data.message.includes("favorite")) {
+                loadFavorites();
+            }
+        };
+
+        socket.onerror = function(error) {
+            console.error("WebSocket error:", error);
+            showNotification("WebSocket connection error", "error");
+        };
+
+        socket.onclose = function() {
+            console.warn("WebSocket connection closed");
+            showNotification("Disconnected from real-time updates", "error");
+        };
+
+        // DOM Ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load initial data
+            loadAuthors();
+            loadBooks();
+            loadFavorites();
+
+            // Setup event listeners for entity type selection
+            document.getElementById('updateEntityType').addEventListener('change', function() {
+                const type = this.value;
+                document.getElementById('updateAuthorForm').style.display = 'none';
+                document.getElementById('updateBookForm').style.display = 'none';
+
+                if (type === 'author') {
+                    document.getElementById('updateAuthorForm').style.display = 'block';
+                    populateAuthorSelect('updateAuthorSelect', authors);
+                } else if (type === 'book') {
+                    document.getElementById('updateBookForm').style.display = 'block';
+                    populateBookSelect('updateBookSelect', books);
+                    populateAuthorSelect('updatedAuthorId', authors);
+                }
+            });
+
+            document.getElementById('deleteEntityType').addEventListener('change', function() {
+                const type = this.value;
+                document.getElementById('deleteAuthorForm').style.display = 'none';
+                document.getElementById('deleteBookForm').style.display = 'none';
+                document.getElementById('deleteFavoriteForm').style.display = 'none';
+
+                if (type === 'author') {
+                    document.getElementById('deleteAuthorForm').style.display = 'block';
+                    populateAuthorSelect('deleteAuthorSelect', authors);
+                } else if (type === 'book') {
+                    document.getElementById('deleteBookForm').style.display = 'block';
+                    populateBookSelect('deleteBookSelect', books);
+                } else if (type === 'favorite') {
+                    document.getElementById('deleteFavoriteForm').style.display = 'block';
+                    populateFavoriteSelect('deleteFavoriteSelect', favorites);
+                }
+            });
+
+            // Populate author select for book creation
+            populateAuthorSelect('bookAuthorId', authors);
+        });
+
+        // Create Author
+        document.getElementById('createAuthorForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const firstName = document.getElementById('authorFirstName').value;
+            const lastName = document.getElementById('authorLastName').value;
+            const birthYear = document.getElementById('authorBirthYear').value;
+
+            fetch(`${API_URL}/author/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    first_name: firstName,
+                    last_name: lastName,
+                    birth_year: birthYear
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showNotification("Author created successfully!", "success");
+                this.reset();
+                loadAuthors();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification("Failed to create author: " + error.message, "error");
+            });
+        });
+
+        // Create Book
+        document.getElementById('createBookForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Отменяем стандартное поведение формы
+
+            // Получаем данные из формы
+            const title = document.getElementById('bookTitle').value;
+            const description = document.getElementById('bookDescription').value;
+            const publishYear = document.getElementById('bookPublishYear').value;
+            const genre = document.getElementById('bookGenre').value;
+            const authorId = document.getElementById('bookAuthorId').value; // ID выбранного автора
+
+            // Проверка, что автор выбран (если обязательное поле)
+            if (!authorId) {
+                showNotification("Please select an author", "error");
+                return;
+            }
+
+            // Отправка данных на сервер
+            fetch(`${API_URL}/book/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    title: title,
+                    description: description,
+                    publish_year: publishYear,
+                    genre: genre,
+                    author: authorId // Отправляем только ID автора
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => Promise.reject(errorData));
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Успешное создание книги
+                showNotification("Book created successfully!", "success");
+                this.reset(); // Очищаем форму
+                loadBooks();  // Обновляем список книг
+            })
+            .catch(error => {
+                // Обработка ошибок
+                console.error('Error:', error);
+                showNotification("Failed to create book: " + error.message, "error");
+            });
+        });
+
+        // Create Favorite
+        document.getElementById('createFavoriteForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const userId = document.getElementById('favoriteUserId').value;
+            const authorId = document.getElementById('favoriteAuthorId').value;
+
+            fetch(`${API_URL}/favorite/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user: userId,
+                    author: authorId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showNotification("Author added to favorites!", "success");
+                this.reset();
+                loadFavorites();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification("Failed to add favorite: " + error.message, "error");
+            });
+        });
+
+        // List Authors
+        document.getElementById('listAuthorsBtn').addEventListener('click', function() {
+            loadAuthors();
+        });
+
+        // List Books
+        document.getElementById('listBooksBtn').addEventListener('click', function() {
+            loadBooks();
+        });
+
+        // List Favorites
+        document.getElementById('listFavoritesBtn').addEventListener('click', function() {
+            loadFavorites();
+        });
+
+        // Update Author
+        document.getElementById('updateAuthorBtn').addEventListener('click', function() {
+            const authorId = document.getElementById('updateAuthorSelect').value;
+            const firstName = document.getElementById('updatedFirstName').value;
+            const lastName = document.getElementById('updatedLastName').value;
+            const birthYear = document.getElementById('updatedBirthYear').value;
+
+            if (!authorId) {
+                showNotification("Please select an author to update", "error");
+                return;
+            }
+
+            const updateData = {};
+            if (firstName) updateData.first_name = firstName;
+            if (lastName) updateData.last_name = lastName;
+            if (birthYear) updateData.birth_year = birthYear;
+
+            if (Object.keys(updateData).length === 0) {
+                showNotification("No fields provided for update", "error");
+                return;
+            }
+
+            fetch(`${API_URL}/author/${authorId}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updateData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                showNotification("Author updated successfully!", "success");
+                document.getElementById('updateAuthorForm').querySelectorAll('input').forEach(i => i.value = '');
+                loadAuthors();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification("Failed to update author: " + error.message, "error");
+            });
+        });
+
+        // Update Book
+        document.getElementById('updateBookBtn').addEventListener('click', function() {
+            const bookId = document.getElementById('updateBookSelect').value;
+            const title = document.getElementById('updatedBookTitle').value;
+            const description = document.getElementById('updatedBookDescription').value;
+            const publishYear = document.getElementById('updatedPublishYear').value;
+            const genre = document.getElementById('updatedGenre').value;
+            const authorId = document.getElementById('updatedAuthorId').value;
+
+            if (!bookId) {
+                showNotification("Please select a book to update", "error");
+                return;
+            }
+
+            const updateData = {};
+            if (title) updateData.title = title;
+            if (description) updateData.description = description;
+            if (publishYear) updateData.publish_year = publishYear;
+            if (genre) updateData.genre = genre;
+            if (authorId) updateData.author = authorId;
+
+            if (Object.keys(updateData).length === 0) {
+                showNotification("No fields provided for update", "error");
+                return;
+            }
+
+            fetch(`${API_URL}/book/${bookId}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updateData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                showNotification("Book updated successfully!", "success");
+                document.getElementById('updateBookForm').querySelectorAll('input').forEach(i => i.value = '');
+                loadBooks();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification("Failed to update book: " + error.message, "error");
+            });
+        });
+
+        // Delete Author
+        document.getElementById('deleteAuthorBtn').addEventListener('click', function() {
+            const authorId = document.getElementById('deleteAuthorSelect').value;
+
+            if (!authorId) {
+                showNotification("Please select an author to delete", "error");
+                return;
+            }
+
+            if (!confirm("Are you sure you want to delete this author?")) {
+                return;
+            }
+
+            fetch(`${API_URL}/author/${authorId}/`, {
+                method: 'DELETE',
+            })
+            .then(response => {
+                if (response.ok) {
+                    showNotification("Author deleted successfully!", "success");
+                    loadAuthors();
+                } else {
+                    throw new Error("Failed to delete author");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification("Failed to delete author: " + error.message, "error");
+            });
+        });
+
+        // Delete Book
+        document.getElementById('deleteBookBtn').addEventListener('click', function() {
+            const bookId = document.getElementById('deleteBookSelect').value;
+
+            if (!bookId) {
+                showNotification("Please select a book to delete", "error");
+                return;
+            }
+
+            if (!confirm("Are you sure you want to delete this book?")) {
+                return;
+            }
+
+            fetch(`${API_URL}/book/${bookId}/`, {
+                method: 'DELETE',
+            })
+            .then(response => {
+                if (response.ok) {
+                    showNotification("Book deleted successfully!", "success");
+                    loadBooks();
+                } else {
+                    throw new Error("Failed to delete book");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification("Failed to delete book: " + error.message, "error");
+            });
+        });
+
+        // Delete Favorite
+        document.getElementById('deleteFavoriteBtn').addEventListener('click', function() {
+            const favoriteId = document.getElementById('deleteFavoriteSelect').value;
+
+            if (!favoriteId) {
+                showNotification("Please select a favorite to delete", "error");
+                return;
+            }
+
+            if (!confirm("Are you sure you want to delete this favorite?")) {
+                return;
+            }
+
+            fetch(`${API_URL}/favorite/${favoriteId}/`, {
+                method: 'DELETE',
+            })
+            .then(response => {
+                if (response.ok) {
+                    showNotification("Favorite deleted successfully!", "success");
+                    loadFavorites();
+                } else {
+                    throw new Error("Failed to delete favorite");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification("Failed to delete favorite: " + error.message, "error");
+            });
+        });
+
+        function loadAuthors() {
+            fetch(`${API_URL}/author/`)
+                .then(response => response.json())
+                .then(data => {
+                    authors = data;
+                    renderAuthors(data);
+
+                    // Заполняем ВСЕ селекторы с авторами, включая favoriteAuthorId
+                    populateAuthorSelect('bookAuthorId', authors);       // Для Create Book
+                    populateAuthorSelect('favoriteAuthorId', authors);   // Для Add to Favorites
+                    populateAuthorSelect('updateAuthorSelect', authors); // Для Update Author
+                    populateAuthorSelect('deleteAuthorSelect', authors); // Для Delete Author
+                })
+                .catch(error => {
+                    console.error('Error loading authors:', error);
+                    showNotification("Failed to load authors", "error");
+                });
+        }
+        function loadBooks() {
+            fetch(`${API_URL}/book/`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    books = data;
+                    renderBooks(data);
+
+                    // Проверяем существование элементов перед заполнением
+                    if (document.getElementById('favoriteBookId')) {
+                        populateBookSelect('favoriteBookId', data);
+                    }
+                    if (document.getElementById('updateBookSelect')) {
+                        populateBookSelect('updateBookSelect', data);
+                    }
+                    if (document.getElementById('deleteBookSelect')) {
+                        populateBookSelect('deleteBookSelect', data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading books:', error);
+                    showNotification("Failed to load books", "error");
+                });
+        }
+
+        function loadFavorites() {
+            fetch(`${API_URL}/favorite/`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Loaded favorites:', data);  // Логируем, что пришло с API
+                    favorites = data;
+                    renderFavorites(data);
+                    populateFavoriteSelect('deleteFavoriteSelect', data);
+                })
+                .catch(error => {
+                    console.error('Error loading favorites:', error);
+                    showNotification("Failed to load favorites", "error");
+                });
+        }
+
+        function renderAuthors(authors) {
+            const container = document.getElementById('authorsList');
+            container.innerHTML = '<h3>Authors:</h3>';
+
+            if (authors.length === 0) {
+                container.innerHTML += '<p>No authors found</p>';
+                return;
+            }
+
+            authors.forEach(author => {
+                const div = document.createElement('div');
+                div.className = 'data-item';
+                div.innerHTML = `
+                    <span>${author.first_name} ${author.last_name} (${author.birth_year})</span>
+                    <span>ID: ${author.id}</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function renderBooks(books) {
+            const container = document.getElementById('booksList');
+            if (!container) {
+                console.error("Element 'booksList' not found");
+                return;
+            }
+
+            container.innerHTML = '<h3>Books:</h3>';
+
+            if (!books || books.length === 0) {
+                container.innerHTML += '<p>No books found</p>';
+                return;
+            }
+
+            books.forEach(book => {
+                const div = document.createElement('div');
+                div.className = 'data-item';
+                div.innerHTML = `
+                    <div>
+                        <strong>${book.title}</strong> (${book.genre}, ${book.publish_year})<br>
+                        <small>By ${book.author?.first_name || 'Unknown'} ${book.author?.last_name || 'Author'}</small>
+                    </div>
+                    <span>ID: ${book.id}</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function renderFavorites(favorites) {
+            const container = document.getElementById('favoritesList');
+            container.innerHTML = '<h3>Favorites:</h3>';
+
+            if (favorites.length === 0) {
+                container.innerHTML += '<p>No favorites found</p>';
+                return;
+            }
+
+            favorites.forEach(favorite => {
+                const div = document.createElement('div');
+                div.className = 'data-item';
+                div.innerHTML = `
+                    <div>
+                        <strong>User ID: ${favorite.user}</strong><br>
+                        <small>Author: ${favorite.author.first_name} ${favorite.author.last_name}</small>
+                    </div>
+                    <span>ID: ${favorite.id}</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function populateAuthorSelect(selectId, authors) {
+            const select = document.getElementById(selectId);
+
+            // Если элемент не найден — выводим ошибку в консоль
+            if (!select) {
+                console.error(`Элемент с ID "${selectId}" не найден в DOM!`);
+                return;
+            }
+
+            select.innerHTML = '<option value="">Select Author</option>';
+
+            authors.forEach(author => {
+                const option = document.createElement('option');
+                option.value = author.id;
+                option.textContent = `${author.first_name} ${author.last_name}`;
+                select.appendChild(option);
+            });
+        }
+
+        function populateBookSelect(selectId, books) {
+            const select = document.getElementById(selectId);
+            if (!select) {
+                console.error(`Element with id '${selectId}' not found`);
+                return;
+            }
+
+            select.innerHTML = '<option value="">Select Book</option>';
+
+            books.forEach(book => {
+                const option = document.createElement('option');
+                option.value = book.id;
+                option.textContent = `${book.title} (${book.author.first_name} ${book.author.last_name})`;
+                select.appendChild(option);
+            });
+        }
+
+        function populateFavoriteSelect(selectId, favorites) {
+            const select = document.getElementById(selectId);
+            if (!select) {
+                console.error(`Select element with id '${selectId}' not found`);
+                return;
+            }
+
+            console.log('Favorites in populateFavoriteSelect:', favorites);  // Логируем данные внутри функции
+
+            select.innerHTML = '<option value="">Select Favorite</option>';
+
+            favorites.forEach(fav => {
+                console.log('Processing favorite:', fav);  // Логируем каждый фаворит
+
+                // Защита от пустых данных
+                if (!fav.author) {
+                    console.warn('Favorite does not have an author:', fav);
+                    return;
+                }
+
+                const option = document.createElement('option');
+                option.value = fav.id;
+
+                // Показать ID пользователя и имя автора
+                const userText = fav.user ? `User ID ${fav.user}` : 'Unknown User';
+                const authorText = fav.author.first_name && fav.author.last_name
+                    ? `${fav.author.first_name} ${fav.author.last_name}`
+                    : 'Unknown Author';
+
+                option.textContent = `${userText}: ${authorText}`;
+                select.appendChild(option);
+            });
+        }
+
+
+        function showNotification(message, type = "error") {
+            const notificationDiv = document.getElementById('notifications');
+            notificationDiv.innerText = message;
+            notificationDiv.style.display = 'block';
+
+            if (type === "success") {
+                notificationDiv.classList.add('success-notification');
+                notificationDiv.classList.remove('error-notification');
+            } else {
+                notificationDiv.classList.add('error-notification');
+                notificationDiv.classList.remove('success-notification');
+            }
+
+            setTimeout(() => {
+                notificationDiv.style.display = 'none';
+            }, 4000);
+        }
+    </script>
+</body>
+</html>

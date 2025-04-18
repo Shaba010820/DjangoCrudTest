@@ -1,0 +1,10 @@
+__pycache__/
+venv/
+env/
+.venv/
+.idea/
+.git/
+Dockerfile
+docker-compose.yml
+staticfiles/
+
